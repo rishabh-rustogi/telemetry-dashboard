@@ -14,31 +14,37 @@ start = time.time()
 fileCPU = "CPUUsage.pkl"
 fileRAM = "RAMUsage.pkl"
 
+# Return top 5 process consuming most Memory
 def processSortedByMemory():
     processList = []
+
     # Iterate over the list
     for proc in psutil.process_iter():
-
        try:
            # Fetch process details as dict
            pinfo = proc.as_dict(attrs=['pid', 'name', 'username'])
            pinfo['vms'] = proc.memory_info().vms / (1024 * 1024)
-           # Append dict to list
+           # Append dictinary to list
            processList.append(pinfo);
        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
            pass
 
+    # Sort the list by virtual memory usage in reverse order
     processList = sorted(processList, key=lambda procObj: procObj['vms'], reverse=True)
-    #print(processList)
+
     tempList = set()
     i = 0
+
+    # Get top 5 unique processes
     while len(tempList) < 5:
         while True:
             if processList[i]['name'] + ": " + str(round((processList[i]['vms']*0.98/1000000),3)) + "GB" not in tempList:
                 tempList.add(processList[i]['name'] + ": " + str(round((processList[i]['vms']*0.98/1000000),3)) + "GB")
                 break
             i += 1
-    return ",\n".join(list(tempList))
+    
+    # Return a comma seperated string of the processes with RAM usage
+    return ", ".join(list(tempList))
 
 while True:
     if time.time() - start > 0.5:
