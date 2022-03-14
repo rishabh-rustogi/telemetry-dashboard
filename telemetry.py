@@ -4,12 +4,11 @@ import pickle
 import pandas as pd
 
 consumer = KafkaConsumer(
-    'movielog3',
+    'movielogXXX',
     bootstrap_servers=['localhost:9092']
-    # Read from the start of the topic; Default is latest
-    # auto_offset_reset='earliest'
 )
 
+#initiate the variables for counting recurrent users over time
 userSet = set()
 countRecurrUsers = 0
 total = 0 
@@ -17,11 +16,16 @@ countRecurrList = []
 timeList = []
 timeCounter = 0
 timeInterval = 180
-start = time.time()
+startTime = time.time()
 
-
+#output file where data frame of recurrent users over time will be written to
 fileRecurrUser = "RecurrUser.pkl"
 
+#loop through every message received from the Kafka Stream
+#Check if the message requests for a reccomendation
+#If it does, check if the userID making the request exists in the userSet
+#If he/she does, increment countRecurrUsers by 1
+#Else add his/her userID to userSet
 for message in consumer:
 
     if 'recommendation' in message.value.decode('UTF-8'):
@@ -31,9 +35,9 @@ for message in consumer:
             countRecurrUsers += 1
         userSet.add(user)
     
-    if time.time() - start > timeInterval:
+    if time.time() - startTime > timeInterval:
         timeCounter += 1
-        start = time.time()
+        startTime = time.time()
         timeList.append(timeCounter*timeInterval)
         countRecurrList.append((countRecurrUsers/total)*100)
         
@@ -41,8 +45,8 @@ for message in consumer:
         total = 0
 
         dfUserRecurr = pd.DataFrame(dict(
-            x = timeList,
-            y = countRecurrList
+            timeList = timeList,
+            countRecurrList = countRecurrList
         ))
 
         f = open(fileRecurrUser,"wb")
