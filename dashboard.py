@@ -1,27 +1,28 @@
-# Run this app with `python app.py` and
+# Run this app with `python dashboard.py` and
 # visit http://127.0.0.1:8050/ in your web browser.
 
-import time
-import plotly.express as px
-import plotly.graph_objects as go
+import subprocess
 import pandas as pd
 import pickle
 import psutil
+
+# Plotly related imports
+import plotly.express as px
+import plotly.graph_objects as go
+
+# Dash related imports
 import dash
 from dash.dependencies import Output, Event
 import dash_core_components as dcc
 import dash_html_components as html
-from random import random
-import subprocess
 
-timeCounter = 0
-timeList = []
-countList = []
-start = time.time()
+
+# Pickle files to read data
 fileCPU = "CPUUsage.pkl"
 fileRAM = "RAMUsage.pkl"
 fileRecurrUser = "RecurrUser.pkl"
 
+# Function that returns python object from pickle file
 def readObject(file):
     objects = []
     with (open(file, "rb")) as openfile:
@@ -33,7 +34,10 @@ def readObject(file):
     
     return objects[0]
     
+# Create a Dash App
 app = dash.Dash(__name__)
+
+# Setup webpage Dash Layout
 app.layout = html.Div(
     html.Div([
         html.H1('Simple Telemetry Dashboard', style={'textAlign': 'center'}),
@@ -50,40 +54,72 @@ app.layout = html.Div(
     ])
 )
 
-
+# Callback for Interval trigger to update CPU Graph periodically
 @app.callback(Output('live-update-graph-cpu', 'figure'),
               events=[Event('interval-component', 'interval')])
 def update_graph_cpu_usage():
     try:
+        # Read the pickle file and get a dataFrame
         df = readObject(fileCPU)
-        #print(df['processes'])
-        fig = px.line(df, x="x", y="y", title="CPU uage over Times")
+        
+        # Create a interactive Plotly line graph using the dataFrame
+        fig = px.line(df, x="timeList", y="countCPUList", title="CPU uage over Times")
+        
+        # Set the Plotly figure Layout
         fig.update_layout(yaxis_range=[0,100])
+        
+        # Return the plotly object
         return fig
     except:
+        
+        # In case of any error, return an empty figure
         return go.Figure()
 
+    
+# Callback for Interval trigger to update RAM Graph periodically
 @app.callback(Output('live-update-graph-ram', 'figure'),
               events=[Event('interval-component', 'interval')])
 def update_graph_ram_usage():
     try:
+        
+        # Read the pickle file and get a dataFrame
         df = readObject(fileRAM)
-        fig = px.line(df, x="x", y="y", title="RAM uage over Times", hover_name="processes")
+        
+        # Create a interactive Plotly line graph using the dataFrame with hover data (top 5 processes)
+        fig = px.line(df, x="timeList", y="countRAMList", title="RAM uage over Times", hover_name="processes")
+        
+        # Set the Plotly figure Layout
         return fig
     except:
+        
+        # In case of any error, return an empty figure
         return go.Figure()
 
+    
+# Callback for Interval trigger to update Recurrent users for Movie recommendation service
 @app.callback(Output('live-update-graph-recurr-usage', 'figure'),
               events=[Event('interval-component', 'interval')])
 def update_graph_recurr_usage():
     try:
+        
+        # Read the pickle file and get a dataFrame
         df = readObject(fileRecurrUser)
-        fig = px.line(df, x="x", y="y") 
+        
+        # Create a interactive Plotly line graph using the dataFrame
+        fig = px.line(df, x="timeList", y="countRecurrList") 
+        
+         # Set the Plotly figure Layout
         return fig
     except:
+        
+        # In case of any error, return an empty figure
         return go.Figure()
 
 if __name__ == '__main__':
-    subprocess.Popen(['python', "/Users/rishabhrustogi/Desktop/Machine Learning in Production/I3/getSystemUsage.py"])
-    subprocess.Popen(['python', "/Users/rishabhrustogi/Desktop/Machine Learning in Production/I3/telemetry.py"])
+    
+    # Initiate the getSystemUsage.py and telemetry.py to run in background to update the pickle files
+    subprocess.Popen(['python', "<file location>/getSystemUsage.py"])
+    subprocess.Popen(['python', "<file location>/telemetry.py"])
+    
+    # Initiate the Dash app (currently in debug mode)
     app.run_server(debug=True)
