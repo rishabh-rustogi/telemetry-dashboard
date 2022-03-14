@@ -4,7 +4,7 @@ import psutil
 import pickle
 
 
-
+#initialize variables to get cpu usage percentage and ram usage percentage over time
 timeCounter = 0
 timeList = []
 countCPUList = []
@@ -46,6 +46,8 @@ def processSortedByMemory():
     # Return a comma seperated string of the processes with RAM usage
     return ", ".join(list(tempList))
 
+#get cpu usage percentage every 0.5 secs and write the dataframe to fileCPU
+#get RAM usage percentage every 0.5 secs, as well as the top 5 processes using the most RAM and write this dataframe to fileRAM
 while True:
     if time.time() - start > 0.5:
 
@@ -56,16 +58,16 @@ while True:
         countRAMList.append(((psutil.virtual_memory().total - psutil.virtual_memory().available)/psutil.virtual_memory().total)*100)
         procList.append(processSortedByMemory())
         dfCPU = pd.DataFrame(dict(
-            x = timeList,
-            y = countCPUList
+            timeList = timeList,
+            countCPUList = countCPUList
         ))
         f = open(fileCPU,"wb")
         pickle.dump(dfCPU,f)
         f.close()
 
         dfRAM = pd.DataFrame(dict(
-            x = timeList,
-            y = countRAMList,
+            timeList = timeList,
+            countRAMList = countRAMList,
             processes = procList
         ))
         f = open(fileRAM,"wb")
