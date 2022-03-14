@@ -22,10 +22,10 @@ startTime = time.time()
 fileRecurrUser = "RecurrUser.pkl"
 
 #loop through every message received from the Kafka Stream
-#Check if the message requests for a reccomendation
-#If it does, check if the userID making the request exists in the userSet
-#If he/she does, increment countRecurrUsers by 1
-#Else add his/her userID to userSet
+#check if the message requests for a reccomendation
+#if it does, check if the userID making the request exists in the userSet
+#if he/she does, increment countRecurrUsers by 1
+#else add his/her userID to userSet
 for message in consumer:
 
     if 'recommendation' in message.value.decode('UTF-8'):
