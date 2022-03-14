@@ -10,7 +10,7 @@ timeList = []
 countCPUList = []
 countRAMList = []
 procList = []
-start = time.time()
+startTime = time.time()
 fileCPU = "CPUUsage.pkl"
 fileRAM = "RAMUsage.pkl"
 
@@ -49,14 +49,20 @@ def processSortedByMemory():
 #get cpu usage percentage every 0.5 secs and write the dataframe to fileCPU
 #get RAM usage percentage every 0.5 secs, as well as the top 5 processes using the most RAM and write this dataframe to fileRAM
 while True:
-    if time.time() - start > 0.5:
+    if time.time() - startTime > 0.5:
 
         timeCounter += 1
-        start = time.time()
+        startTime = time.time()
         timeList.append(timeCounter*0.5)
+        
+        #append current cpu usage percent to countCPUList
         countCPUList.append(psutil.cpu_percent())
+        #append current RAM usage percent to countCPUList
         countRAMList.append(((psutil.virtual_memory().total - psutil.virtual_memory().available)/psutil.virtual_memory().total)*100)
+        #append top 5 processes using the most RAM to procList
         procList.append(processSortedByMemory())
+        
+        #create and write the dataframe of cpu usage over time
         dfCPU = pd.DataFrame(dict(
             timeList = timeList,
             countCPUList = countCPUList
@@ -64,7 +70,8 @@ while True:
         f = open(fileCPU,"wb")
         pickle.dump(dfCPU,f)
         f.close()
-
+        
+        #create and write the dataframe of RAM usage with top 5 RAM heavy processess over time
         dfRAM = pd.DataFrame(dict(
             timeList = timeList,
             countRAMList = countRAMList,
