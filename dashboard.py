@@ -63,7 +63,7 @@ def update_graph_cpu_usage():
         df = readObject(fileCPU)
         
         # Create a interactive Plotly line graph using the dataFrame
-        fig = px.line(df, x="timeList", y="countCPUList", title="CPU uage over Times")
+        fig = px.line(df, x="timeList", y="countCPUList", title="CPU usage over Times")
         
         # Set the Plotly figure Layout
         fig.update_layout(yaxis_range=[0,100])
